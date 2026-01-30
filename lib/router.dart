@@ -14,6 +14,7 @@ import 'package:autism/screens/student/autism_detection_screen.dart';
 import 'package:autism/screens/teacher/students_list_screen.dart';
 import 'package:autism/screens/parent/students_list_screen.dart';
 import 'package:autism/screens/shared/student_detail_screen.dart';
+import 'package:autism/screens/student/iframe_content_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -50,6 +51,18 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/connect-dots',
       builder: (context, state) => const ConnectDotsScreen(),
+    ),
+
+    // Iframe Template - standalone
+    GoRoute(
+      path: '/iframe-activity',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return IframeContentScreen(
+          url: extra?['url'] ?? 'https://flutter.dev',
+          title: extra?['title'] ?? 'Activity',
+        );
+      },
     ),
 
     // All student pages share the same navbar + profile FAB
