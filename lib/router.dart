@@ -8,6 +8,7 @@ import 'package:autism/screens/student/explore_screen.dart';
 import 'package:autism/screens/student/profile_screen.dart';
 import 'package:autism/screens/student/sensory_slime_activity.dart';
 import 'package:autism/screens/student/content_list_screen.dart';
+import 'package:autism/screens/student/connect_dots_screen.dart';
 import 'package:autism/screens/teacher/upload_content_screen.dart';
 import 'package:autism/screens/student/autism_detection_screen.dart';
 import 'package:autism/screens/teacher/students_list_screen.dart';
@@ -43,6 +44,12 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/content-list',
       builder: (context, state) => const ContentListScreen(),
+    ),
+
+    // Connect Dots Game - standalone
+    GoRoute(
+      path: '/connect-dots',
+      builder: (context, state) => const ConnectDotsScreen(),
     ),
 
     // All student pages share the same navbar + profile FAB

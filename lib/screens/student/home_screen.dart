@@ -39,9 +39,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       'color': Color(0xFFE8F5E9),
     },
     {
-      'title': 'Mindful Moments',
-      'subtitle': 'Course',
-      'emoji': '💡',
+      'title': 'Connect Dots',
+      'subtitle': 'Game',
+      'emoji': '🎯',
       'color': Color(0xFFE3F2FD),
     },
     {
@@ -170,6 +170,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         onTap: () {
                           if (tile['title'] == 'Coloring Fun') {
                             context.push('/sensory-slime');
+                          } else if (tile['title'] == 'Connect Dots') {
+                            context.push('/connect-dots');
                           } else {
                             context.go('/explore');
                           }
