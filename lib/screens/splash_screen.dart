@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:autism/services/auth_services.dart';
+import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,8 +29,18 @@ class _SplashScreenState extends State<SplashScreen>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      context.go('/login');
+    Timer(const Duration(seconds: 2), () async {
+      final loggedIn = await AuthService.isLoggedIn();
+      if (loggedIn) {
+        final role = await AuthService.getUserRole();
+        if (role != null && role.toLowerCase() == 'teacher') {
+          context.go('/teacher/upload');
+        } else {
+          context.go('/home');
+        }
+      } else {
+        context.go('/login');
+      }
     });
   }
 
@@ -41,6 +53,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -49,36 +62,63 @@ class _SplashScreenState extends State<SplashScreen>
               scale: _scaleAnimation,
               child: Column(
                 children: [
-                  Image.asset(
-                    'assets/image-removebg-preview (2).png',
-                    width: 100,
-                    height: 100,
-                  ), // Your teal brain icon
-                  const SizedBox(height: 16),
-                  const Text(
-                    'NeuroSense',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal,
+                  // Logo Container
+                  NeoBox(
+                    padding: const EdgeInsets.all(20),
+                    borderRadius: 40,
+                    color: Colors.white,
+                    child: Image.asset(
+                      'assets/image-removebg-preview (2).png',
+                      width: 100,
+                      height: 100,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+
+                  const SizedBox(height: 32),
+
+                  Text(
+                    'NeuroSense',
+                    style: AppTheme.headlineStyle(
+                      fontSize: 42,
+                      color: AppTheme.accent,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
                     'Skeletal-based autism trigger monitoring',
-                    style: TextStyle(fontSize: 16, color: Colors.teal),
+                    style: AppTheme.bodyStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-            const LinearProgressIndicator(
-              value: null,
-              backgroundColor: Color(0xFFB2DFDB),
-              color: Colors.teal,
-            ),
-            const SizedBox(height: 8),
-            const Text('Loading...', style: TextStyle(color: Colors.teal)),
+
+            const SizedBox(height: 60),
+
+            // Styled Progress Indicator
+            SizedBox(
+              width: 200,
+              child: Column(
+                children: [
+                  LinearProgressIndicator(
+                    backgroundColor: AppTheme.ink.withOpacity(0.1),
+                    color: AppTheme.accent,
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'LOADING...',
+                    style: AppTheme.buttonTextStyle(
+                      fontSize: 14,
+                      color: AppTheme.ink,
+                    ),
+                  ),
+                ],
+              ),
+            ).neoEntrance(delay: 500),
           ],
         ),
       ),

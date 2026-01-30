@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/auth_services.dart';
 import '../../theme/app_theme.dart';
 
@@ -71,44 +72,51 @@ class _TeacherStudentsListScreenState extends State<TeacherStudentsListScreen> {
                 final student = _students[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: NeoBox(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        NeoBox(
-                          width: 50,
-                          height: 50,
-                          borderRadius: 25,
-                          color: Colors.blue[100],
-                          alignment: Alignment.center,
-                          child: const Text(
-                            '🎓',
-                            style: TextStyle(fontSize: 24),
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to student detail screen
+                      context.go('/teacher/student-detail', extra: student);
+                    },
+                    child: NeoBox(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          NeoBox(
+                            width: 50,
+                            height: 50,
+                            borderRadius: 25,
+                            color: Colors.blue[100],
+                            alignment: Alignment.center,
+                            child: const Text(
+                              '🎓',
+                              style: TextStyle(fontSize: 24),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                student['fullName'] ?? 'Unknown Student',
-                                style: AppTheme.buttonTextStyle(fontSize: 18),
-                              ),
-                              if (student['email'] != null)
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  student['email'],
-                                  style: AppTheme.bodyStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
-                                  ),
+                                  student['fullName'] ?? 'Unknown Student',
+                                  style: AppTheme.buttonTextStyle(fontSize: 18),
                                 ),
-                            ],
+                                if (student['email'] != null)
+                                  Text(
+                                    student['email'],
+                                    style: AppTheme.bodyStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ).neoEntrance(delay: index * 100),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
+                      ),
+                    ).neoEntrance(delay: index * 100),
+                  ),
                 );
               },
             ),

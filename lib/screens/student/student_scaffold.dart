@@ -31,7 +31,7 @@ class _StudentScaffoldState extends State<StudentScaffold> {
 
   List<String> get _tabRoutes {
     if (_role == 'student') {
-      return ['/home', '/explore', '/activities', '/courses'];
+      return ['/home', '/explore', '/courses'];
     } else if (_role == 'teacher') {
       return ['/home', '/explore', '/teacher/students'];
     } else {

@@ -12,6 +12,7 @@ import 'package:autism/screens/teacher/upload_content_screen.dart';
 import 'package:autism/screens/student/autism_detection_screen.dart';
 import 'package:autism/screens/teacher/students_list_screen.dart';
 import 'package:autism/screens/parent/students_list_screen.dart';
+import 'package:autism/screens/shared/student_detail_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -71,6 +72,21 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/teacher/students',
           builder: (context, state) => const TeacherStudentsListScreen(),
+        ),
+        // Student Detail Screens - inside ShellRoute to maintain navigation
+        GoRoute(
+          path: '/parent/student-detail',
+          builder: (context, state) {
+            final student = state.extra as Map<String, dynamic>;
+            return StudentDetailScreen(student: student);
+          },
+        ),
+        GoRoute(
+          path: '/teacher/student-detail',
+          builder: (context, state) {
+            final student = state.extra as Map<String, dynamic>;
+            return StudentDetailScreen(student: student);
+          },
         ),
       ],
     ),
