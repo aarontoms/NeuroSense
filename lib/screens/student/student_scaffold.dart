@@ -31,7 +31,7 @@ class _StudentScaffoldState extends State<StudentScaffold> {
 
   List<String> get _tabRoutes {
     if (_role == 'student') {
-      return ['/home', '/explore', '/courses'];
+      return ['/home', '/explore'];
     } else if (_role == 'teacher') {
       return ['/home', '/explore', '/teacher/students'];
     } else {
@@ -79,8 +79,7 @@ class _StudentScaffoldState extends State<StudentScaffold> {
                 ? [
                     _buildNavItem(context, 0, '🏠', 'Home', currentIndex),
                     _buildNavItem(context, 1, '🧭', 'Explore', currentIndex),
-                    _buildNavItem(context, 2, '🧩', 'Activities', currentIndex),
-                    _buildNavItem(context, 3, '🎓', 'Courses', currentIndex),
+                    // _buildNavItem(context, 2, '🎓', 'Courses', currentIndex),
                   ]
                 : [
                     _buildNavItem(context, 0, '🏠', 'Home', currentIndex),

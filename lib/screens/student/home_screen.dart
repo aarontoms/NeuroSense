@@ -45,10 +45,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       'color': Color(0xFFE3F2FD),
     },
     {
-      'title': 'Social Stories',
-      'subtitle': 'Course',
-      'emoji': '🗣️',
-      'color': Color(0xFFFFF3E0),
+      'title': 'Face Monitor',
+      'subtitle': 'tool',
+      'emoji': '📸',
+      'color': Color(0xFFF3E5F5),
     },
     {
       'title': 'Coloring Fun',
@@ -172,6 +172,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                             context.push('/sensory-slime');
                           } else if (tile['title'] == 'Connect Dots') {
                             context.push('/connect-dots');
+                          } else if (tile['title'] == 'Face Monitor') {
+                            context.push('/iframe-activity');
                           } else {
                             context.go('/explore');
                           }

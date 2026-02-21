@@ -59,7 +59,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return IframeContentScreen(
-          url: extra?['url'] ?? 'https://flutter.dev',
+          url: extra?['url'] ?? 'https://mv1z79jg-5173.inc1.devtunnels.ms/',
           title: extra?['title'] ?? 'Activity',
         );
       },

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_theme.dart';
+import 'package:permission_handler/permission_handler.dart';
+// Import for Android-specific WebView features
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class IframeContentScreen extends StatefulWidget {
   final String url;
@@ -11,7 +14,7 @@ class IframeContentScreen extends StatefulWidget {
     super.key,
     // [ENTRY POINT] Default URL - Replace with your iframe source URL
     this.url =
-        'https://mv1z79jg-5173.inc1.devtunnels.ms', //this is for the face trigger detection of the student for autism detection.
+        'https://mv1z79jg-5173.inc1.devtunnels.ms/', //this is for the face trigger detection of the student for autism detection.
     this.title = 'Face Analysis',
   });
 
@@ -24,9 +27,33 @@ class _IframeContentScreenState extends State<IframeContentScreen> {
   bool _isLoading = true;
 
   @override
+  @override
   void initState() {
     super.initState();
     _initializeWebView();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    await [Permission.camera, Permission.microphone].request();
+
+    if (await Permission.camera.status != PermissionStatus.granted ||
+        await Permission.microphone.status != PermissionStatus.granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Camera and Microphone permissions are required for face detection',
+            ),
+          ),
+        );
+      }
+    } else {
+      // Load the URL only after permissions are granted
+      if (mounted) {
+        _controller.loadRequest(Uri.parse(widget.url));
+      }
+    }
   }
 
   // [ENTRY POINT] Initialize the iframe/webview controller
@@ -46,8 +73,21 @@ class _IframeContentScreenState extends State<IframeContentScreen> {
             debugPrint('WebView error: ${error.description}');
           },
         ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
+      );
+
+    // Enable camera/microphone permissions on Android
+    if (_controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      final AndroidWebViewController androidController =
+          _controller.platform as AndroidWebViewController;
+
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      androidController.setOnPlatformPermissionRequest((
+        PlatformWebViewPermissionRequest request,
+      ) {
+        request.grant();
+      });
+    }
   }
 
   @override
