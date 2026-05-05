@@ -247,9 +247,52 @@ class _AutismDetectionScreenState extends State<AutismDetectionScreen> {
       }
     } catch (e) {
       debugPrint("Gemini Error: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Analysis failed: $e")));
+
+      final triggerCount = allInputSegments.length;
+      int percentage = 10;
+      String riskLevel = "Low";
+      if (triggerCount > 0) {
+        percentage = triggerCount <= 2 ? 75 : 95;
+        riskLevel = "High";
+      }
+
+      final envs = allInputSegments.expand((s) => s.env).toSet().toList();
+      final points = [
+        "Local threshold processing used due to network issue.",
+        "$triggerCount potential triggers detected in the video.",
+        "Check environments for specific cues.",
+      ];
+      final triggersList = allInputSegments
+          .map(
+            (s) => {
+              'timestamp':
+                  "${_formatDuration(s.start)}-${_formatDuration(s.end)}",
+              'description': "Trigger Detected",
+            },
+          )
+          .toList();
+
+      setState(() {
+        _geminiReport = GeminiReport(
+          percentage: percentage,
+          riskLevel: riskLevel,
+          analysisPoints: points,
+          triggers: triggersList,
+          environments: envs,
+          isFallback: true,
+        );
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Note: Gemini failed. Showing fallback local analysis.",
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
     } finally {
       setState(() => _isAnalyzingGemini = false);
     }
@@ -669,6 +712,20 @@ class _AutismDetectionScreenState extends State<AutismDetectionScreen> {
             ),
             const Divider(height: 30, thickness: 2, color: AppTheme.ink),
 
+            if (report.isFallback)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  "*gemini services unavailable*",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+
             Text("Clinical Analysis", style: AppTheme.buttonTextStyle()),
             const SizedBox(height: 8),
             ...report.analysisPoints.map((point) {
@@ -787,6 +844,7 @@ class GeminiReport {
   final List<String> analysisPoints;
   final List<Map<String, String>> triggers;
   final List<String> environments;
+  final bool isFallback;
 
   GeminiReport({
     required this.percentage,
@@ -794,6 +852,7 @@ class GeminiReport {
     required this.analysisPoints,
     required this.triggers,
     required this.environments,
+    this.isFallback = false,
   });
 
   factory GeminiReport.fromJson(Map<String, dynamic> json) {
@@ -818,6 +877,7 @@ class GeminiReport {
       environments:
           (json['environments'] as List?)?.map((e) => e.toString()).toList() ??
           [],
+      isFallback: json['isFallback'] ?? false,
     );
   }
 }
