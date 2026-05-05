@@ -240,10 +240,122 @@ class _AttentionMonitorScreenState extends State<AttentionMonitorScreen> {
 
   void _onSessionComplete() async {
     await _stopSession(notifyServer: false);
-    if (mounted) {
-      // Navigate directly to analytics results
-      context.push('/attention-analytics');
+    await _fetchAndShowReport();
+  }
+
+  Future<void> _fetchAndShowReport() async {
+    if (!mounted || _studentId.isEmpty) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Small delay to ensure DB write is complete
+      await Future.delayed(const Duration(milliseconds: 800));
+      final sessions = await AttentionService.analyticsByStudent(_studentId);
+
+      if (!mounted) return;
+      Navigator.pop(context); // pop loading
+
+      if (sessions.isNotEmpty) {
+        final latest = sessions.first;
+        _showReportDialog(latest);
+      } else {
+        context.push('/attention-analytics');
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // pop loading
+        context.push('/attention-analytics');
+      }
     }
+  }
+
+  void _showReportDialog(dynamic session) {
+    final name = session['stimulus_name'] ?? 'Unknown';
+    final avgAtt = ((session['avg_attention'] ?? 0) * 100);
+    final blinks = session['blink_count'] ?? 0;
+    final focusScore = session['focus_score'] ?? 0;
+    
+    final color = avgAtt >= 70
+        ? Colors.green
+        : avgAtt >= 40
+            ? Colors.orange
+            : Colors.red;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.analytics_outlined, color: AppTheme.accent),
+            const SizedBox(width: 8),
+            Text('Session Report', style: AppTheme.headlineStyle(fontSize: 22)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Stimulus: $name', style: AppTheme.buttonTextStyle(fontSize: 16)),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.5)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Avg Attention', style: AppTheme.bodyStyle(fontSize: 15)),
+                  Text('${avgAtt.toStringAsFixed(1)}%', 
+                      style: AppTheme.buttonTextStyle(fontSize: 16, color: color)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Focus Score', style: AppTheme.bodyStyle(fontSize: 15)),
+                Text('${(focusScore as num).toStringAsFixed(0)}%', style: AppTheme.buttonTextStyle(fontSize: 15)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Blink Count', style: AppTheme.bodyStyle(fontSize: 15)),
+                Text('$blinks', style: AppTheme.buttonTextStyle(fontSize: 15)),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('CLOSE', style: AppTheme.buttonTextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push('/attention-analytics');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('FULL ANALYTICS', style: AppTheme.buttonTextStyle(color: Colors.white, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ── Media Playback ──
@@ -261,7 +373,20 @@ class _AttentionMonitorScreenState extends State<AttentionMonitorScreen> {
         Uri.parse(AttentionService.mediaUrl(url)),
       );
       await _videoController!.initialize();
-      _videoController!.addListener(() { if (mounted) setState(() {}); });
+      _videoController!.addListener(() {
+        if (mounted) {
+          setState(() {});
+          if (_sessionActive &&
+              _videoController!.value.isInitialized &&
+              !_videoController!.value.isPlaying &&
+              _videoController!.value.duration > Duration.zero &&
+              _videoController!.value.position >= _videoController!.value.duration) {
+            _stopSession(notifyServer: true).then((_) {
+              _fetchAndShowReport();
+            });
+          }
+        }
+      });
       await _videoController!.play();
       if (mounted) setState(() {});
     } catch (_) {
@@ -431,22 +556,17 @@ class _AttentionMonitorScreenState extends State<AttentionMonitorScreen> {
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
+              color: Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
               border: AppTheme.neoBorder(),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: _stimulusSeconds,
-                isExpanded: true,
-                items: [10, 15, 20, 30, 45, 60]
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text('$s seconds'),
-                        ))
-                    .toList(),
-                onChanged: (v) => setState(() => _stimulusSeconds = v!),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.timer, size: 20, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text('30 seconds (Fixed)', style: AppTheme.bodyStyle(fontSize: 16)),
+              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -572,6 +692,7 @@ class _AttentionMonitorScreenState extends State<AttentionMonitorScreen> {
                 GestureDetector(
                   onTap: () async {
                     await _stopSession();
+                    await _fetchAndShowReport();
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
