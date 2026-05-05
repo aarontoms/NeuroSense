@@ -15,6 +15,8 @@ import 'package:autism/screens/teacher/students_list_screen.dart';
 import 'package:autism/screens/parent/students_list_screen.dart';
 import 'package:autism/screens/shared/student_detail_screen.dart';
 import 'package:autism/screens/student/iframe_content_screen.dart';
+import 'package:autism/screens/student/attention_monitor_screen.dart';
+import 'package:autism/screens/student/attention_analytics_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -113,6 +115,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/autism-detection',
       builder: (context, state) => const AutismDetectionScreen(),
+    ),
+    GoRoute(
+      path: '/attention-monitor',
+      builder: (context, state) => const AttentionMonitorScreen(),
+    ),
+    GoRoute(
+      path: '/attention-analytics',
+      builder: (context, state) => const AttentionAnalyticsScreen(),
     ),
   ],
 );

@@ -33,9 +33,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   final List<Map<String, dynamic>> recommended = const [
     {
-      'title': 'Yoga Flow',
-      'subtitle': 'Game',
-      'emoji': '🧘',
+      'title': 'Attention Monitor',
+      'subtitle': 'Tool',
+      'emoji': '👁️',
       'color': Color(0xFFE8F5E9),
     },
     {
@@ -168,7 +168,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       final tile = recommended[i];
                       return GestureDetector(
                         onTap: () {
-                          if (tile['title'] == 'Coloring Fun') {
+                          if (tile['title'] == 'Attention Monitor') {
+                            context.push('/attention-monitor');
+                          } else if (tile['title'] == 'Coloring Fun') {
                             context.push('/sensory-slime');
                           } else if (tile['title'] == 'Connect Dots') {
                             context.push('/connect-dots');
